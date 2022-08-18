@@ -4,9 +4,19 @@ These Linux scripts were created to ease development of EFI Shell applications a
 
 ## First Time Setup
 
-First you will need to setup the environment for EDK2 utility scripts
+First create a suitable directory to store the files
 
 ```
+$ cd ~/
+$ mkdir dev
+$ cd dev
+```
+
+Clone and then setup the environment for EDK2 utility scripts
+
+```
+$ git clone git@github.com:davepet1234/edk2-scripts.git
+$ cd edk2-scripts
 $ source ./initscripts.sh
 ```
 
@@ -16,17 +26,10 @@ You will then need to check and install EDK2 dependancies required for build
 $ ./edkdep.sh -i
 ```
 
-Create a suitable workspace
+Download and configure EDK2 build environment, this will create an `edk2` workspace under the current directory
 
 ```
-$ cd ~/
-$ mkdir dev 
-$ cd dev
-```
-
-Download and configure EDK2 build environment
-
-```
+$ cd ~/dev
 $ edkinstall.sh
 $ cd edk2
 $ source ./edkinit.sh
