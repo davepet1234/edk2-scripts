@@ -20,6 +20,7 @@ source "${PROGRAM_DIR}/shared.sh"
 # gcc-5
 # acpica-tools instead of iasl
 EDK2_PACKAGES="build-essential uuid-dev acpica-tools git nasm python3-distutils qemu-system-x86 tree"
+PYTHON_EXECUTABLE=python3
 # Clang
 CLANG_VERSION="11"
 LLVM_COMPILER_PACKAGE="clang"
@@ -168,6 +169,27 @@ else
     done
 fi
 
+# python check
+which python > /dev/null
+if [ $? -ne 0 ]; then
+    which ${PYTHON_EXECUTABLE} > /dev/null
+    if [ $? -ne 0 ]; then
+        print_err "Failed to find ${PYTHON_EXECUTABLE} executable"
+        exit 1
+    else
+    	PYTHON_LOC=$(which ${PYTHON_EXECUTABLE})
+        print_info "Creating python symbolic link: ${PYTHON_LOC}"
+        sudo ln -s ${PYTHON_LOC} /usr/bin/python
+        if [ $? -ne 0 ]; then
+            print_err "Failed to create symbolic link to: ${PYTHON_EXECUTABLE}"    
+            exit 1
+        fi
+    fi
+else
+    PYTHON_LOC=$(which python)
+    print_info "Python present: ${PYTHON_LOC}"
+fi
+
 # Clang symbolic links
 if [[ ${CLANG} -eq 1 ]]; then
     # check links
@@ -192,7 +214,7 @@ if [[ ${CLANG} -eq 1 ]]; then
         if [ ! -e "${lnk}" ]; then
             sudo ln -s ${lnk}-${CLANG_VERSION} ${lnk}
             if [ $? -ne 0 ]; then
-                print_err "Failed to create sybolic link: ${lnk}"
+                print_err "Failed to create symbolic link: ${lnk}"
                 exit 1
             else
                 ls --color=tty -l ${lnk}
