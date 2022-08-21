@@ -10,9 +10,6 @@
 
 # Script to setup environment for EDK2 utility scripts
 
-################################################################################
-# main
-
 # check if script sourced
 if [ "${BASH_SOURCE[0]}" == "${0}" ]; then
     cat <<EOF

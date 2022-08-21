@@ -17,8 +17,7 @@ PROGRAM_NAME="$(basename "$0")"
 PROGRAM_DIR="$(cd "$(dirname "$0")"; pwd;)"
 CURRENT_DIR="$(pwd)"
 
-EDKINIT_SRC_FILENAME="_edkinit.sh"
-EDKINIT_DST_FILENAME="edkinit.sh"
+EDKINIT_FILENAME="edkinit.sh"
 EDK2_SETUP_FILENAME="edksetup.sh"
 EDK2_CONFIG_FILENAME="target.txt"
 

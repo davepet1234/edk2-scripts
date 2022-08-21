@@ -176,9 +176,54 @@ else
     set_var ${FILE} TOOL_CHAIN_TAG GCC5
 fi
 
-print_info "Copy and initialise ${EDKINIT_DST_FILENAME} to EDK2 workspace"
-cp ${PROGRAM_DIR}/${EDKINIT_SRC_FILENAME} ./${EDKINIT_DST_FILENAME}
-sed -i "s|EDK2_UTIL_SCRIPTS_DIR=\"\"|EDK2_UTIL_SCRIPTS_DIR=\"${PROGRAM_DIR}\"|" ${EDKINIT_DST_FILENAME}
+print_info "Creating: ${EDKINIT_FILENAME}"
+######################################
+cat << EOF_SCRIPT > ${EDKINIT_FILENAME}
+#!/bin/bash
+
+################################################################################
+#
+# EDK2 Utility Scripts
+#
+# Author: David Petroivc
+#
+################################################################################
+
+# Script to initialise EDK2 development environment
+
+INIT_SCRIPTS="${EDK2_SCRIPTS}/initscripts.sh"
+
+# check if script sourced
+if [ "\${BASH_SOURCE[0]}" == "\${0}" ]; then
+    cat <<EOF
+
+ Script to initialise EDK2 development environment
+ 
+ Usage: source ./edkinit.sh
+
+EOF
+    echo -e " \033[97;41mNote that script must be \"sourced\" not merely executed!\033[0m" >&2
+    echo
+    exit 1
+fi
+
+if [ -f "\${INIT_SCRIPTS}" ]; then
+    # initialise EDK2 Utility scripts
+    source \${INIT_SCRIPTS}
+    # initialise EDK2 build enviroment
+    if [ -f "./${EDK2_SETUP_FILENAME}" ]; then
+        source ./${EDK2_SETUP_FILENAME}
+    else
+        echo -e "\033[97;41m[ERROR] EDK2 Setup script not found: ./${EDK2_SETUP_FILENAME}\033[0m" >&2
+    fi
+else    
+    echo -e "\033[97;41m[ERROR] EDK2 Utility script not found: \${INIT_SCRIPTS}\033[0m" >&2
+fi
+unset INIT_SCRIPTS
+
+EOF_SCRIPT
+######################################
+chmod +x ${EDKINIT_FILENAME}
 
 END_SECONDS=$(date +%s)
 print_info "Elapsed time $(get_elapsed_time ${START_SECONDS} ${END_SECONDS})"
