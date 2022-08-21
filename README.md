@@ -96,7 +96,7 @@ FS0:\> TestApp.efi
 TestApp application
 ```
 
-![edk2-scripts](/screenshots/Ubuntu.jpg?raw=true "Ubuntu")
+![edk2-scripts](/screenshots/Ubuntu.png?raw=true "Ubuntu")
 
 ## Help
 
