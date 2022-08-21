@@ -96,6 +96,8 @@ FS0:\> TestApp.efi
 TestApp application
 ```
 
+![edk2-scripts](/screenshots/Ubuntu.jpg?raw=true "Ubuntu")
+
 ## Help
 
 Running `scripts.sh` will list all available scripts
