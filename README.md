@@ -15,7 +15,7 @@ $ cd dev
 Clone and then setup the environment for EDK2 utility scripts
 
 ```
-$ git clone git@github.com:davepet1234/edk2-scripts.git
+$ git clone https://github.com/davepet1234/edk2-scripts.git
 $ cd edk2-scripts
 $ source ./initscripts.sh
 ```
