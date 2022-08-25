@@ -17,12 +17,13 @@ PROGRAM_DIR="$(cd "$(dirname "$0")"; pwd;)"
 source "${PROGRAM_DIR}/shared.sh"
 
 EDK2_REPO_URL="https://github.com/tianocore/edk2.git"
-TARGET_DIR=$(basename ${EDK2_REPO_URL} .git)
+LIBC_REPO_URL="https://github.com/tianocore/edk2-libc"
 PARENT_DIR="$PWD"
 TAG=""
 CLONE_OPTS=""
 FORCE=0
 CLANG=0
+LIBC=0
 
 ################################################################################
 # print_help
@@ -32,15 +33,17 @@ function print_help {
 
  Script to download and configure EDK2 build environment
  
- Usage: ${PROGRAM_NAME} [target dir] [OPTIONS]
+ Usage: ${PROGRAM_NAME} [<workspace>] [OPTIONS]
 
-  [target dir] - directory to clone into (default: ${TARGET_DIR})
 
  OPTIONS:
 
-  -p, --parent <dir>     Parent directory to clone into (default: current directory)
+  <workspace>            The name of a 'new' workspace folder (default: TODO)
+
+  -p, --parent <dir>     Parent directory to clone into (default is current directory)
   -t, --tag <tag>        GIT tag to clone (default: master)
   -c, --clang            Install for Clang compiler (default: gcc)
+      --libc             Install EDK2 LIBC
   -f, --force            No prompts
   -h, --help             Print this help and exit
 
@@ -57,7 +60,7 @@ if [ -n "$1" ] && [ ! "${1::1}" == "-" ]; then
         print_err "Invalid target directory: $1"
         exit 1
     fi
-    TARGET_DIR=$1
+    WORKSPACE_FOLDER=$1
     shift # past target directory
 fi
 
@@ -85,6 +88,10 @@ while [[ $# -gt 0 ]]
         CLANG=1
         shift # past argument
        ;;
+    --libc)
+        LIBC=1
+        shift # past argument
+       ;;
     -f|--force)
         FORCE=1
         shift # past argument
@@ -100,14 +107,22 @@ while [[ $# -gt 0 ]]
     esac
 done
 
+if [ -z "${WORKSPACE_FOLDER}" ]; then
+    if [ ${LIBC} -eq 0 ]; then
+        WORKSPACE_FOLDER=$(basename ${EDK2_REPO_URL} .git)
+    else
+        WORKSPACE_FOLDER="edk2libc"
+    fi
+fi
+
 ################################################################################
 # main
 
 check_script_env
 
+# check if EDK2 workspace already set
 if [ -n "${WORKSPACE}" ]; then
-    print_err "EDK2 workspace already configured: ${WORKSPACE}"
-    exit 1
+    print_warn "EDK2 workspace already configured: ${WORKSPACE}"
 fi
 
 START_SECONDS=$(date +%s)
@@ -117,17 +132,20 @@ if [ ! -d "${PARENT_DIR}" ]; then
     print_err "Parent directory does not exist"
     exit 1
 fi
-TARGET_DIR="${PARENT_DIR}/${TARGET_DIR}"
-if [ -d "${TARGET_DIR}" ]; then
-    print_err "Directory already exists with that name: ${TARGET_DIR}"
+WORKSPACE_DIR="${PARENT_DIR}/${WORKSPACE_FOLDER}"
+if [ -d "${WORKSPACE_DIR}" ]; then
+    print_err "Directory already exists with that name: ${WORKSPACE_DIR}"
     exit 1
 fi
-print_info "Install directory: ${TARGET_DIR}"
+print_info "Install directory: ${WORKSPACE_DIR}"
 if [ -n "${TAG}" ]; then
-    print_info "Clone tag: ${TAG}"
+    print_info "EDK2 clone tag: ${TAG}"
 fi
 if [ ${CLANG} -eq 1 ]; then
     print_info "Clang compiler"
+fi
+if [ ${LIBC} -eq 1 ]; then
+    print_info "LIBC support"
 fi
 user_confirm "Continue" ${FORCE}
 if [ $? -ne 0 ]; then
@@ -135,20 +153,53 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# clone repo
-print_info "Cloning ${TAG}"
+# create workspace directory
 cd ${PARENT_DIR}
-git clone ${CLONE_OPTS} ${EDK2_REPO_URL} ${TARGET_DIR}
+if [ ${LIBC} -eq 0 ]; then
+    # workspace directory is same as EDK2 repo
+    EDK2_DIR="${WORKSPACE_DIR}"
+else
+    # workspace directory contains EDK2 and LIBC repos
+    mkdir ${WORKSPACE_DIR}
+    if [ $? -ne 0 ]; then
+        print_err "Failed to create directory: ${WORKSPACE_DIR}"
+        exit 1
+    fi
+    cd ${WORKSPACE_DIR}
+    EDK2_DIR="${WORKSPACE_DIR}/$(basename ${EDK2_REPO_URL} .git)"
+fi
+
+echo "-------------------------------------------"
+echo "WORKSPACE_FOLDER = ${WORKSPACE_FOLDER}"
+echo
+echo "PARENT_DIR       = ${PARENT_DIR}"
+echo "WORKSPACE_DIR    = ${WORKSPACE_DIR}"
+echo "EDK2_DIR         = ${EDK2_DIR}"
+echo "-------------------------------------------"
+
+# clone EDK2 repo
+print_info "Cloning EDK2 ${TAG}"
+git clone ${CLONE_OPTS} ${EDK2_REPO_URL} ${EDK2_DIR}
 if [ $? -ne 0 ]; then
     print_err "Failed to clone repo"
     exit 1
 fi
 
-# switch to repo directory
-cd ${TARGET_DIR}
+# clone EDK2-LIBC repo
+if [ ${LIBC} -eq 1 ]; then
+    print_info "Cloning EDK2-LIBC ${TAG}"
+    git clone ${CLONE_OPTS} ${LIBC_REPO_URL}
+    if [ $? -ne 0 ]; then
+        print_err "Failed to clone repo"
+        exit 1
+    fi
+fi
 
-# initialise submodules
-print_info "Initialise Submodules"
+# switch to EDK2 repo directory
+cd ${EDK2_DIR}
+
+# initialise EDK2 submodules
+print_info "Initialise EDK2 Submodules"
 git submodule update --init
 if [ $? -ne 0 ]; then
     print_err "Failed to initialise submodules"
@@ -163,9 +214,22 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-print_info "Initialise Configuration"
-source ./${EDK2_SETUP_FILENAME} --reconfig
-#CONF_PATH="./Conf"
+# initialise EDK2 configuration
+print_info "Initialise EDK2 Configuration"
+cd ${WORKSPACE_DIR}
+unset WORKSPACE
+unset PACKAGES_PATH
+unset EDK_TOOLS_PATH
+unset CONF_PATH
+if [ ${LIBC} -eq 0 ]; then
+    source ./${EDK2_SETUP_FILENAME} --reconfig
+else
+    export WORKSPACE=${WORKSPACE_DIR}
+    export PACKAGES_PATH="${WORKSPACE}/edk2-libc:${WORKSPACE}/edk2"
+    export EDK_TOOLS_PATH="${WORKSPACE}/edk2/BaseTools"
+    source ./edk2/${EDK2_SETUP_FILENAME} --reconfig
+fi
+export EDK2_LIBC=${LIBC}    
 FILE="${CONF_PATH}/${EDK2_CONFIG_FILENAME}"
 set_var ${FILE} ACTIVE_PLATFORM ShellPkg/ShellPkg.dsc
 set_var ${FILE} TARGET DEBUG
@@ -177,6 +241,11 @@ else
 fi
 
 print_info "Creating: ${EDKINIT_FILENAME}"
+if [ ${LIBC} -eq 0 ]; then
+    DEV_ENV="EDK2"
+else
+    DEV_ENV="EDK2+LIBC"
+fi
 ######################################
 cat << EOF_SCRIPT > ${EDKINIT_FILENAME}
 #!/bin/bash
@@ -185,11 +254,13 @@ cat << EOF_SCRIPT > ${EDKINIT_FILENAME}
 #
 # EDK2 Utility Scripts
 #
+# Script to initialise ${DEV_ENV} development environment
+#
+# Created: $(date)
+#
 # Author: David Petroivc
 #
 ################################################################################
-
-# Script to initialise EDK2 development environment
 
 INIT_SCRIPTS="${EDK2_SCRIPTS}/initscripts.sh"
 
@@ -197,7 +268,7 @@ INIT_SCRIPTS="${EDK2_SCRIPTS}/initscripts.sh"
 if [ "\${BASH_SOURCE[0]}" == "\${0}" ]; then
     cat <<EOF
 
- Script to initialise EDK2 development environment
+ Script to initialise ${DEV_ENV} development environment
  
  Usage: source ./edkinit.sh
 
@@ -211,10 +282,36 @@ if [ -f "\${INIT_SCRIPTS}" ]; then
     # initialise EDK2 Utility scripts
     source \${INIT_SCRIPTS}
     # initialise EDK2 build enviroment
-    if [ -f "./${EDK2_SETUP_FILENAME}" ]; then
-        source ./${EDK2_SETUP_FILENAME}
+EOF_SCRIPT
+######################################
+# EDK2
+if [ ${LIBC} -eq 0 ]; then
+cat << EOF_SCRIPT >> ${EDKINIT_FILENAME}
+    if [ -f "./edksetup.sh" ]; then
+        unset WORKSPACE
+        unset PACKAGES_PATH
+        unset EDK_TOOLS_PATH
+        unset CONF_PATH
+        source ./edksetup.sh
+        export EDK2_LIBC=${LIBC}
+EOF_SCRIPT
+else
+######################################
+# EDK2+LIBC
+cat << EOF_SCRIPT >> ${EDKINIT_FILENAME}
+    if [ -f "./edk2/edksetup.sh" ]; then
+        export WORKSPACE=\${PWD}
+        export PACKAGES_PATH="\${WORKSPACE}/edk2-libc:\${WORKSPACE}/edk2"
+        unset EDK_TOOLS_PATH
+        unset CONF_PATH
+        source ./edk2/edksetup.sh
+        export EDK2_LIBC=${LIBC}
+EOF_SCRIPT
+fi
+######################################
+cat << EOF_SCRIPT >> ${EDKINIT_FILENAME}
     else
-        echo -e "\033[97;41m[ERROR] EDK2 Setup script not found: ./${EDK2_SETUP_FILENAME}\033[0m" >&2
+        echo -e "\033[97;41m[ERROR] EDK2 Setup script not found: ${EDK2_SETUP}\033[0m" >&2
     fi
 else    
     echo -e "\033[97;41m[ERROR] EDK2 Utility script not found: \${INIT_SCRIPTS}\033[0m" >&2
@@ -232,6 +329,6 @@ print_info "EDK2 Info"
 edkinfo.sh
 
 # prompt to setup environment
-print_info "Run 'source ${EDKINIT_DST_FILENAME}' from workspace directory to setup environment"
+print_info "Run 'source ${EDKINIT_FILENAME}' from workspace directory to setup environment"
 
 exit 0

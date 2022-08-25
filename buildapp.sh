@@ -114,6 +114,9 @@ if [ -z "${APP_NAME}" ]; then
     exit 1
 fi
 
+APP_ROOT_FOLDER_RELPATH=$(get_app_root_relpath ${EDK2_LIBC})
+DSC_FILE_RELPATH=$(get_dsc_file_relpath ${EDK2_LIBC})
+
 if [ ! -d "${APP_ROOT_FOLDER_RELPATH}/${APP_NAME}" ]; then
     print_err "Application directory does not exist: ${APP_ROOT_FOLDER_RELPATH}/${APP_NAME}"
     exit 1
@@ -142,7 +145,7 @@ else
     ACTION="Build"
 fi
 
-build ${CLEAN_OPT} -p ShellPkg/ShellPkg.dsc -b ${TARGET} -m ${INF_FILE}
+build ${CLEAN_OPT} -p ${DSC_FILE_RELPATH} -b ${TARGET} -m ${INF_FILE}
 retval=$?
 
 if [ $retval -ne 0 ]; then
@@ -161,9 +164,17 @@ if [ ${UPDATEVM} -eq 1 ]; then
         ADD_SW="-f"
     fi
     updatevm.sh ${APP_NAME} ${ADD_SW}
+    if [ $? -ne 0 ]; then
+        print_err "Failed to update VM"
+        exit 1
+    fi
 fi
 if [ ${RUNVM} -eq 1 ]; then
-    runvm.sh ${APP_NAME}
+    runvm.sh
+    if [ $? -ne 0 ]; then
+        print_err "Failed to run VM"
+        exit 1
+    fi
 fi
 
 exit ${retval}

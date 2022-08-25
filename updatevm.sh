@@ -133,8 +133,9 @@ if [ -z "${FILE_TO_COPY}" ]; then
         print_err "Failed to retrive toolchain"
         exit 1
     fi
-    DBG_BIN="Build/Shell/DEBUG_${TOOL_CHAIN_TAG}/X64/${APP_NAME}.efi"
-    REL_BIN="Build/Shell/RELEASE_${TOOL_CHAIN_TAG}/X64/${APP_NAME}.efi"
+    BUILD_ROOT_RELPATH=$(get_build_root_relpath ${EDK2_LIBC})
+    DBG_BIN="${BUILD_ROOT_RELPATH}/DEBUG_${TOOL_CHAIN_TAG}/X64/${APP_NAME}.efi"
+    REL_BIN="${BUILD_ROOT_RELPATH}/RELEASE_${TOOL_CHAIN_TAG}/X64/${APP_NAME}.efi"
     
     # check if app has been built
     if [ ! -f "${DBG_BIN}" ] && [ ! -f "${REL_BIN}" ]; then
@@ -228,6 +229,10 @@ sudo rmdir ${MOUNT_POINT}
 if [ ${retval} -eq 0 ] && [ ${RUNVM} -eq 1 ]; then
     print_info "Running VM"
     runvm.sh 
+    if [ $? -ne 0 ]; then
+        print_err "Failed to run VM"
+        exit 1
+    fi
 fi
 
 exit ${retval}

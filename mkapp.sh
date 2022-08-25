@@ -16,9 +16,10 @@
 PROGRAM_DIR="$(cd "$(dirname "$0")"; pwd;)"
 source "${PROGRAM_DIR}/shared.sh"
 
-APP_ROOT_FOLDER_RELPATH="ShellPkg/Application"
-DSC_FILE_RELPATH="ShellPkg/ShellPkg.dsc"
+APP_ROOT_FOLDER_RELPATH=$(get_app_root_relpath ${EDK2_LIBC})
+DSC_FILE_RELPATH=$(get_dsc_file_relpath ${EDK2_LIBC})
 APP_NAME=""
+LIBC_APP=${EDK2_LIBC}
 GUID="$(uuidgen)"
 FORCE=0
 
@@ -30,15 +31,17 @@ function print_help {
 
  Script to create a new EDK2 shell application
  
- Application will be created under ${APP_ROOT_FOLDER_RELPATH}/...
- Application .inf file will be added to ${DSC_FILE_RELPATH}
+ Application will be created under "${APP_ROOT_FOLDER_RELPATH}/..."
+ Application .inf file will be added to "${DSC_FILE_RELPATH}"
  
- Usage: ${PROGRAM_NAME} [app name] [OPTIONS]
+ Usage: ${PROGRAM_NAME} <app name> [OPTIONS]
 
-  [app name] - application name
+  <app name> - application name
 
  OPTIONS:
 
+      --edk2             Force creation of an EDK2 native application
+      --libc             Force creation of a StdLib application
   -f, --force            No prompts
   -h, --help             Print this help and exit
 
@@ -66,6 +69,19 @@ while [[ $# -gt 0 ]]
     do
     key="$1"
     case $key in
+    --edk2)
+        LIBC_APP=0
+        shift # past argument
+        ;;
+    --libc)
+        if [ ! -z ${EDK2_LIBC} ] && [ ${EDK2_LIBC} -eq 1 ]; then
+            LIBC_APP=1
+        else
+            print_err "Workspace does not support LIBC appliactions"
+            exit 1
+        fi
+        shift # past argument
+        ;;
     -f|--force)
         FORCE=1
         shift # past argument
@@ -92,7 +108,6 @@ if [ -z "${APP_NAME}" ]; then
     exit 1
 fi
 
-
 APP_ROOT_FOLDER_ABSPATH="$(get_dirpath ${APP_ROOT_FOLDER_RELPATH})"
 APP_FOLDER_ABSPATH="${APP_ROOT_FOLDER_ABSPATH}/${APP_NAME}"
 if [ -d "${APP_FOLDER_ABSPATH}" ]; then
@@ -103,6 +118,12 @@ APP_C_FILE_ABSPATH="${APP_FOLDER_ABSPATH}/${APP_NAME}.c"
 APP_INF_FILE_ABSPATH="${APP_FOLDER_ABSPATH}/${APP_NAME}.inf"
 APP_INF_FILE_RELPATH="${APP_ROOT_FOLDER_RELPATH}/${APP_NAME}/${APP_NAME}.inf"
 DSC_FILE_ABSPATH="$(get_filepath ${DSC_FILE_RELPATH})"
+
+if [ ${LIBC_APP} -eq 1 ]; then
+    print_info "Creating an EDK2 + LIBC application"
+else
+    print_info "Creating an EDK2 application"
+fi
 
 echo "Files to be created:"
 echo "${APP_C_FILE_ABSPATH}"
@@ -123,6 +144,9 @@ if [ $? -ne 0 ]; then
 fi
 
 print_info "Creating: ${APP_C_FILE_ABSPATH}"
+
+if [ ${LIBC_APP} -eq 1 ]; then
+######################################
 cat << EOF > ${APP_C_FILE_ABSPATH}
 /**
 
@@ -130,10 +154,32 @@ cat << EOF > ${APP_C_FILE_ABSPATH}
 
 **/
 
-#include <Uefi.h>
-#include <Library/UefiLib.h>
-#include <Library/DebugLib.h>
-#include <Library/ShellCEntryLib.h>
+#include  <stdio.h>
+
+int
+main (
+  IN int Argc,
+  IN char **Argv
+  )
+{
+  printf("${APP_NAME} application (LibC)\n");
+
+  return 0;
+}
+EOF
+######################################
+else
+######################################
+cat << EOF > ${APP_C_FILE_ABSPATH}
+/**
+
+ ${APP_NAME}.c
+
+**/
+
+#include  <Uefi.h>
+#include  <Library/UefiLib.h>
+#include  <Library/ShellCEntryLib.h>
 
 INTN
 EFIAPI
@@ -142,12 +188,48 @@ ShellAppMain (
   IN CHAR16 **Argv
   )
 {
-    Print(L"${APP_NAME} application\n");
-    return 0;
+  Print(L"${APP_NAME} application\n");
+
+  return 0;
 }
 EOF
+######################################
+fi
 
 print_info "Creating: ${APP_INF_FILE_ABSPATH}"
+
+if [ ${LIBC_APP} -eq 1 ]; then
+######################################
+cat << EOF >> ${APP_INF_FILE_ABSPATH}
+##
+#
+# ${APP_NAME}.inf
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010006
+  BASE_NAME                      = ${APP_NAME}
+  FILE_GUID                      = ${GUID}
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = ShellCEntryLib
+
+[Sources]
+  ${APP_NAME}.c
+
+[Packages]
+  StdLib/StdLib.dec
+  MdePkg/MdePkg.dec
+  ShellPkg/ShellPkg.dec
+
+[LibraryClasses]
+  LibC
+  LibStdio
+EOF
+######################################
+else
+######################################
 cat << EOF > ${APP_INF_FILE_ABSPATH}
 ##
 #
@@ -171,10 +253,11 @@ cat << EOF > ${APP_INF_FILE_ABSPATH}
   ShellPkg/ShellPkg.dec
 
 [LibraryClasses]
-  ShellCEntryLib
   UefiLib
-  ShellLib
+  ShellCEntryLib
 EOF
+######################################
+fi
 
 print_info "Modifying: ${DSC_FILE_ABSPATH}"
 dscfile "${DSC_FILE_ABSPATH}" "${APP_INF_FILE_RELPATH}" -a

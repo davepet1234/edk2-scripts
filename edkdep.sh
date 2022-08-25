@@ -19,7 +19,7 @@ source "${PROGRAM_DIR}/shared.sh"
 # EDK2
 # gcc-5
 # acpica-tools instead of iasl
-EDK2_PACKAGES="build-essential uuid-dev acpica-tools git nasm python3-distutils qemu-system-x86 tree"
+EDK2_PACKAGES="git build-essential uuid-dev acpica-tools git nasm python3-distutils qemu-system-x86 tree"
 PYTHON_EXECUTABLE=python3
 # Clang
 CLANG_VERSION="11"

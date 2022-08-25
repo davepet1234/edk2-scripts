@@ -58,14 +58,16 @@ done
 check_script_env
 
 echo "EDK2_SCRIPTS:     ${EDK2_SCRIPTS}"
+echo "EDK2_LIBC:        ${EDK2_LIBC}"
 echo "---"
 
 if [ -z "${WORKSPACE}" ]; then
-    print_err "EDK2 workspace not set, please source \"${EDKINIT_DST_FILENAME}\"" from workspace directory
+    print_err "EDK2 workspace not set, please source \"${EDKINIT_FILENAME}\"" from workspace directory
     exit 1
 fi
 
 echo "WORKSPACE:        ${WORKSPACE}"
+echo "PACKAGES_PATH:    ${PACKAGES_PATH}"
 echo "EDK_TOOLS_PATH:   ${EDK_TOOLS_PATH}"
 echo "CONF_PATH:        ${CONF_PATH}"
 

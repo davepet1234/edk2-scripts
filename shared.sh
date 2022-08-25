@@ -21,9 +21,12 @@ EDKINIT_FILENAME="edkinit.sh"
 EDK2_SETUP_FILENAME="edksetup.sh"
 EDK2_CONFIG_FILENAME="target.txt"
 
-APP_ROOT_FOLDER_RELPATH="ShellPkg/Application"
-APP_DBG_BUILD_FOLDER_RELPATH="Build/Shell/DEBUG_GCC5/X64"
-APP_REL_BUILD_FOLDER_RELPATH="Build/Shell/RELEASE_GCC5/X64"
+EDK2_APP_ROOT_FOLDER_RELPATH="ShellPkg/Application"
+LIBC_APP_ROOT_FOLDER_RELPATH="edk2-libc/AppPkg/Applications"
+EDK2_DSC_FILE_RELPATH="ShellPkg/ShellPkg.dsc"
+LIBC_DSC_FILE_RELPATH="edk2-libc/AppPkg/AppPkg.dsc"
+EDK2_BUILD_ROOT_RELPATH="Build/Shell"
+LIBC_BUILD_ROOT_RELPATH="Build/AppPkg"
 
 VM_FOLDER="vm"
 DISK_IMAGE_FILENAME="edkdisk.img"
@@ -134,11 +137,54 @@ function check_edk2_workspace() {
         print_err "EDK2 workspace has not been set!"
         exit 1
     fi
-    cd ${WORKSPACE}
-    if [ ! -f "${EDK2_SETUP_FILENAME}" ]; then
+    if [ ! -z ${EDK2_LIBC} ] && [ ${EDK2_LIBC} -eq 1 ]; then
+        local FILE_TO_CHECK=${WORKSPACE}/edk2/${EDK2_SETUP_FILENAME}
+    else
+        local FILE_TO_CHECK=${WORKSPACE}/${EDK2_SETUP_FILENAME}
+    fi
+    if [ ! -f "${FILE_TO_CHECK}" ]; then
         print_err "Invalid EDK2 workspace, ${EDK2_SETUP_FILENAME} not found!"
         exit 1
     fi
+}
+
+################################################################################
+# get_app_root_relpath - Get root directory of applications relative to workspace
+
+function get_app_root_relpath() {
+    local LIBC=$1   # flag specifying a EDK2+LIBC installation
+    if [ ! -z ${LIBC} ] && [ ${LIBC} -eq 1 ]; then
+        local RELPATH="${LIBC_APP_ROOT_FOLDER_RELPATH}"
+    else
+        local RELPATH="${EDK2_APP_ROOT_FOLDER_RELPATH}"
+    fi
+    echo ${RELPATH}
+}
+
+################################################################################
+# get_dsc_file_relpath - Get platform file (.dsc) relative to workspace
+
+function get_dsc_file_relpath() {
+    local LIBC=$1   # flag specifying a EDK2+LIBC installation
+    if [ ! -z ${LIBC} ] && [ ${LIBC} -eq 1 ]; then
+        local RELPATH="${LIBC_DSC_FILE_RELPATH}"
+    else
+        local RELPATH="${EDK2_DSC_FILE_RELPATH}"
+    fi
+    echo ${RELPATH}
+}
+
+################################################################################
+# get_build_root_relpath - Get the application build root directoty relative to workspace
+
+function get_build_root_relpath() {
+    local LIBC=$1   # flag specifying a EDK2+LIBC installation
+    if [ ! -z ${LIBC} ] && [ ${LIBC} -eq 1 ]; then
+        local RELPATH="${LIBC_BUILD_ROOT_RELPATH}"
+    else
+        local RELPATH="${EDK2_BUILD_ROOT_RELPATH}"
+    fi
+    echo ${RELPATH}
 }
 
 ################################################################################
@@ -190,7 +236,8 @@ function set_var() {
     fi
     SED_PARAM="s|\(^\s*${VAR_NAME}\s*=\s*\)\([a-zA-Z0-9\/\._]*\)|\1${VAR_VALUE}|"
     sed -i "${SED_PARAM}" ${FILE}
-    return 1
+    #echo "${VAR_NAME} = ${VAR_VALUE}"
+    return $?
 }
 
 ################################################################################
