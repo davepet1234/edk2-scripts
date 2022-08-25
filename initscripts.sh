@@ -25,7 +25,7 @@ EOF
 fi
 
 # set script location
-export EDK2_SCRIPTS="$(cd "$(dirname "${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}")"; pwd;)"
+export EDK2_SCRIPTS="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd;)"
 # only configure path if not already present
 if [[ "${PATH}" != *"${EDK2_SCRIPTS}"* ]]; then
     export PATH=${PATH}:${EDK2_SCRIPTS}
