@@ -57,8 +57,8 @@ done
 
 check_script_env
 
-echo "EDK2_SCRIPTS:     ${EDK2_SCRIPTS}"
-echo "EDK2_LIBC:        ${EDK2_LIBC}"
+echo "EDK2_SCRIPTS:     $(display_var ${EDK2_SCRIPTS})"
+echo "EDK2_LIBC:        $(display_var ${EDK2_LIBC})"
 echo "---"
 
 if [ -z "${WORKSPACE}" ]; then
@@ -66,10 +66,10 @@ if [ -z "${WORKSPACE}" ]; then
     exit 1
 fi
 
-echo "WORKSPACE:        ${WORKSPACE}"
-echo "PACKAGES_PATH:    ${PACKAGES_PATH}"
-echo "EDK_TOOLS_PATH:   ${EDK_TOOLS_PATH}"
-echo "CONF_PATH:        ${CONF_PATH}"
+echo "WORKSPACE:        $(display_var ${WORKSPACE})"
+echo "PACKAGES_PATH:    $(display_var ${PACKAGES_PATH})"
+echo "EDK_TOOLS_PATH:   $(display_var ${EDK_TOOLS_PATH})"
+echo "CONF_PATH:        $(display_var ${CONF_PATH})"
 
 if [ ! -d "${WORKSPACE}" ]; then
     print_err "Workspace directory does not exist"

@@ -130,6 +130,18 @@ function check_script_env() {
 }
 
 ################################################################################
+# display_var - Display variable
+
+function display_var() {
+    local VAR=$1   # variable to display
+    if [ -z "${VAR}" ]; then
+        echo "<unset>"
+    else
+        echo "${VAR}"
+    fi
+}
+
+################################################################################
 # check_edk2_workspace - Exit script if not configured or invalid
 
 function check_edk2_workspace() {
@@ -188,17 +200,17 @@ function get_build_root_relpath() {
 }
 
 ################################################################################
-# check_vm_dir - Check if VM directory exist, create if not
+# check_vm_dir - Check if VM directory exists
 
 function check_vm_dir() {
-    if [ ! -d "${VM_FOLDER}" ]; then
+    if [ ! -d "${WORKSPACE}/${VM_FOLDER}" ]; then
         print_err "Please initialise VM first"
         exit 1
     fi
 }
 
 ################################################################################
-# get_var - Read variable value
+# get_var - Read variable value from file
 
 function get_var() {
     local FILE=$1
@@ -216,7 +228,7 @@ function get_var() {
 }
 
 ################################################################################
-# set_var - Set variable value
+# set_var - Set variable value in file
 
 function set_var() {
     local FILE=$1

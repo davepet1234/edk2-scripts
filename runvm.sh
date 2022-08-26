@@ -89,7 +89,7 @@ if [ ${SERIAL} -eq 1 ] && [ ${LOGGING} -eq 0 ]; then
 elif [ ${LOGGING} -eq 1 ]; then
     ADD_SW="-chardev stdio,id=char0,logfile=${LOGFILE},signal=off -serial chardev:char0"
 fi
-cd ${VM_FOLDER}
+cd ${WORKSPACE}/${VM_FOLDER}
 ${QEMM} -cpu qemu64\
                     -m 1024M\
                     -drive if=pflash,format=raw,unit=0,file=OVMF_CODE.fd,readonly=on\

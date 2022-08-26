@@ -108,7 +108,7 @@ if [ -z "${APP_NAME}" ]; then
     exit 1
 fi
 
-APP_ROOT_FOLDER_ABSPATH="$(get_dirpath ${APP_ROOT_FOLDER_RELPATH})"
+APP_ROOT_FOLDER_ABSPATH="${WORKSPACE}/${APP_ROOT_FOLDER_RELPATH}"
 APP_FOLDER_ABSPATH="${APP_ROOT_FOLDER_ABSPATH}/${APP_NAME}"
 if [ -d "${APP_FOLDER_ABSPATH}" ]; then
     print_err "Application already exists: ${APP_FOLDER_ABSPATH}"
@@ -117,7 +117,7 @@ fi
 APP_C_FILE_ABSPATH="${APP_FOLDER_ABSPATH}/${APP_NAME}.c"
 APP_INF_FILE_ABSPATH="${APP_FOLDER_ABSPATH}/${APP_NAME}.inf"
 APP_INF_FILE_RELPATH="${APP_ROOT_FOLDER_RELPATH}/${APP_NAME}/${APP_NAME}.inf"
-DSC_FILE_ABSPATH="$(get_filepath ${DSC_FILE_RELPATH})"
+DSC_FILE_ABSPATH="${WORKSPACE}/${DSC_FILE_RELPATH}"
 
 if [ ${LIBC_APP} -eq 1 ]; then
     print_info "Creating an EDK2 + LIBC application"
@@ -262,7 +262,7 @@ fi
 print_info "Modifying: ${DSC_FILE_ABSPATH}"
 dscfile "${DSC_FILE_ABSPATH}" "${APP_INF_FILE_RELPATH}" -a
 if [ $? -ne 0 ]; then
-    print_err "Failed to add application inf to: ${DSC_FILE_RELPATH}"
+    print_err "Failed to add application inf to: ${DSC_FILE_ABSPATH}"
     exit 1
 fi
 

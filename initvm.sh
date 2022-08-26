@@ -83,7 +83,8 @@ done
 check_script_env
 check_edk2_workspace
 
-if [ -f "${DISK_IMAGE_RELPATH}" ]; then
+DISK_IMAGE_ABSPATH="${WORKSPACE}/${DISK_IMAGE_RELPATH}"
+if [ -f "${DISK_IMAGE_ABSPATH}" ]; then
     print_warn "VM already exists"
     user_confirm "Overwrite existing VM files" ${FORCE}
     if [ $? -ne 0 ]; then
@@ -108,12 +109,10 @@ if [ ! -d "${VM_FOLDER}" ]; then
 fi
 
 # build OVMF and copy to VM folder
-OVMF_CODE_FD="Build/OvmfX64/NOOPT_GCC5/FV/OVMF_CODE.fd"
-OVMF_VARS_FD="Build/OvmfX64/NOOPT_GCC5/FV/OVMF_VARS.fd"
+OVMF_CODE_FD="${WORKSPACE}/Build/OvmfX64/NOOPT_GCC5/FV/OVMF_CODE.fd"
+OVMF_VARS_FD="${WORKSPACE}/Build/OvmfX64/NOOPT_GCC5/FV/OVMF_VARS.fd"
 if [ -f "${OVMF_CODE_FD}" ] && [ -f "${OVMF_VARS_FD}" ]; then
     print_info "Using existing OVMF build"
-    echo ${OVMF_CODE_FD}
-    echo ${OVMF_VARS_FD}
 else
     user_confirm "Build OVMF" ${FORCE}
     if [ $? -ne 0 ]; then
@@ -125,7 +124,13 @@ else
         print_err "Failed to build the OVMF Package files"
         exit 1
     fi
+    if [ ! -f "${OVMF_CODE_FD}" ] || [ ! -f "${OVMF_VARS_FD}" ]; then
+        print_err "Failed to find required OVMF files"
+        exit 1
+    fi
 fi
+echo ${OVMF_CODE_FD}
+echo ${OVMF_VARS_FD}
 cp ${OVMF_CODE_FD} ${VM_FOLDER}
 cp ${OVMF_VARS_FD} ${VM_FOLDER}
 
@@ -135,7 +140,7 @@ if [ -z "${TOOL_CHAIN_TAG}" ]; then
     print_err "Failed to retrive toolchain"
     exit 1
 fi
-EFI_SHELL=Build/Shell/RELEASE_${TOOL_CHAIN_TAG}/X64/Shell_EA4BB293-2D7F-4456-A681-1F22F42CD0BC.efi
+EFI_SHELL=${WORKSPACE}/Build/Shell/RELEASE_${TOOL_CHAIN_TAG}/X64/Shell_EA4BB293-2D7F-4456-A681-1F22F42CD0BC.efi
 if [ -f "${EFI_SHELL}" ]; then
     print_info "Using existing EFI Shell build"
     echo ${EFI_SHELL}
@@ -157,7 +162,7 @@ if [ -z "${DISK_SIZE}" ]; then
     DISK_SIZE=${DEFAULT_DISK_SIZE}
 fi
 TOTAL_SECTORS=$(( (${DISK_SIZE}*ONE_MEGABYTE)/${DEFAULT_SECTOR_SIZE} ))
-dd if=/dev/zero of=${DISK_IMAGE_RELPATH} bs=${DEFAULT_SECTOR_SIZE} count=${TOTAL_SECTORS}
+dd if=/dev/zero of=${DISK_IMAGE_ABSPATH} bs=${DEFAULT_SECTOR_SIZE} count=${TOTAL_SECTORS}
 if [ $? -ne 0 ]; then
     print_err "Failed to create disk image"
     exit 1
@@ -177,16 +182,16 @@ echo                          # Last sector (default)
 echo ef00                     # Parition type (EFI system partition)
 echo w                        # Write changes
 echo y                        # Confirm
-) | sudo gdisk ${DISK_IMAGE_RELPATH}
+) | sudo gdisk ${DISK_IMAGE_ABSPATH}
 
-get_disk_info ${DISK_IMAGE_RELPATH}
+get_disk_info ${DISK_IMAGE_ABSPATH}
 
 OFFSET=$(( ${START_SECTOR}*${SECTOR_SIZE} ))
 SIZE_LIMIT=$(( (${END_SECTOR}-${START_SECTOR}+1)*${SECTOR_SIZE} ))
 ###OFFSET=$(( ${DEFAULT_START_SECTOR}*${DEFAULT_SECTOR_SIZE} ))
 ###SIZE_LIMIT=$(( (${END_SECTOR}-${DEFAULT_START_SECTOR}+1)*${DEFAULT_SECTOR_SIZE} ))
 ###echo ${OFFSET} ${SIZE_LIMIT}
-LOOP_DEV=$(sudo losetup --find --show --offset ${OFFSET} --sizelimit ${SIZE_LIMIT} ${DISK_IMAGE_RELPATH})
+LOOP_DEV=$(sudo losetup --find --show --offset ${OFFSET} --sizelimit ${SIZE_LIMIT} ${DISK_IMAGE_ABSPATH})
 if [ $? -ne 0 ]; then
     print_err "Failed to setup loop device"
     exit 1
@@ -221,9 +226,9 @@ fi
 sudo rmdir ${MOUNT_POINT}
 sudo losetup -d ${LOOP_DEV}
 
-if [ -f "${DISK_IMAGE_RELPATH}" ]; then
+if [ -f "${DISK_IMAGE_ABSPATH}" ]; then
     print_info "Successfully created disk image"
-    print_info "Disk image: $(get_filepath "${DISK_IMAGE_RELPATH}")"
+    print_info "Disk image: $(get_filepath "${DISK_IMAGE_ABSPATH}")"
 else
     print_err "Failed to create disk image"
     exit 1

@@ -30,13 +30,14 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-if [ ! -f "${DISK_IMAGE_RELPATH}" ]; then
+DISK_IMAGE_ABSPATH="${WORKSPACE}/${DISK_IMAGE_RELPATH}"
+if [ ! -f "${DISK_IMAGE_ABSPATH}" ]; then
     print_err "No disk image found"
     exit 1
 fi
 
-print_info "Disk image: $(get_filepath "${DISK_IMAGE_RELPATH}")"
-get_disk_info ${DISK_IMAGE_RELPATH}
+print_info "Disk image: ${DISK_IMAGE_ABSPATH}"
+get_disk_info ${DISK_IMAGE_ABSPATH}
 if [ $? -ne 0 ]; then
     print_err "Disk image error"
     exit 1
@@ -45,7 +46,7 @@ OFFSET=$(( ${START_SECTOR}*${SECTOR_SIZE} ))
 
 retval=1
 sudo mkdir ${MOUNT_POINT}
-sudo mount -o loop,offset=${OFFSET} ${DISK_IMAGE_RELPATH} ${MOUNT_POINT}
+sudo mount -o loop,offset=${OFFSET} ${DISK_IMAGE_ABSPATH} ${MOUNT_POINT}
 if [ $? -eq 0 ]; then
     df ${MOUNT_POINT} -h
     echo

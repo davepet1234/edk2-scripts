@@ -112,11 +112,12 @@ if [ $? -eq 0 ]; then
     exit 1
 fi
 
-if [ ! -f "${DISK_IMAGE_RELPATH}" ]; then
-    print_err "No disk image found: ${DISK_IMAGE_RELPATH}"
+DISK_IMAGE_ABSPATH="${WORKSPACE}/${DISK_IMAGE_RELPATH}"
+if [ ! -f "${DISK_IMAGE_ABSPATH}" ]; then
+    print_err "No disk image found: ${DISK_IMAGE_ABSPATH}"
     exit ${retval}
 fi
-print_info "Disk image: $(get_filepath "${DISK_IMAGE_RELPATH}")"
+print_info "Disk image: ${DISK_IMAGE_ABSPATH}"
 
 if [ -z "${FILE_TO_COPY}" ]; then
 
@@ -134,8 +135,8 @@ if [ -z "${FILE_TO_COPY}" ]; then
         exit 1
     fi
     BUILD_ROOT_RELPATH=$(get_build_root_relpath ${EDK2_LIBC})
-    DBG_BIN="${BUILD_ROOT_RELPATH}/DEBUG_${TOOL_CHAIN_TAG}/X64/${APP_NAME}.efi"
-    REL_BIN="${BUILD_ROOT_RELPATH}/RELEASE_${TOOL_CHAIN_TAG}/X64/${APP_NAME}.efi"
+    DBG_BIN="${WORKSPACE}/${BUILD_ROOT_RELPATH}/DEBUG_${TOOL_CHAIN_TAG}/X64/${APP_NAME}.efi"
+    REL_BIN="${WORKSPACE}/${BUILD_ROOT_RELPATH}/RELEASE_${TOOL_CHAIN_TAG}/X64/${APP_NAME}.efi"
     
     # check if app has been built
     if [ ! -f "${DBG_BIN}" ] && [ ! -f "${REL_BIN}" ]; then
@@ -199,7 +200,7 @@ else
     fi
 fi
 
-get_disk_info ${DISK_IMAGE_RELPATH}
+get_disk_info "${DISK_IMAGE_ABSPATH}"
 if [ $? -ne 0 ]; then
     print_err "Disk image error"
     exit 1
@@ -208,7 +209,7 @@ OFFSET=$(( ${START_SECTOR}*${SECTOR_SIZE} ))
 
 retval=1
 sudo mkdir ${MOUNT_POINT}
-sudo mount -o loop,offset=${OFFSET} ${DISK_IMAGE_RELPATH} ${MOUNT_POINT}
+sudo mount -o loop,offset=${OFFSET} ${DISK_IMAGE_ABSPATH} ${MOUNT_POINT}
 if [ $? -eq 0 ]; then
     if [ ! -f "${FILE_TO_COPY}" ]; then
         print_warn "File not found: ${FILE_TO_COPY}"

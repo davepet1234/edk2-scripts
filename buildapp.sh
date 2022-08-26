@@ -117,11 +117,12 @@ fi
 APP_ROOT_FOLDER_RELPATH=$(get_app_root_relpath ${EDK2_LIBC})
 DSC_FILE_RELPATH=$(get_dsc_file_relpath ${EDK2_LIBC})
 
-if [ ! -d "${APP_ROOT_FOLDER_RELPATH}/${APP_NAME}" ]; then
-    print_err "Application directory does not exist: ${APP_ROOT_FOLDER_RELPATH}/${APP_NAME}"
+APP_FOLDER_ABSPATH="${WORKSPACE}/${APP_ROOT_FOLDER_RELPATH}/${APP_NAME}"
+if [ ! -d "${APP_FOLDER_ABSPATH}" ]; then
+    print_err "Application directory does not exist: ${APP_FOLDER_ABSPATH}"
     exit 1
 fi
-INF_FILE="${APP_ROOT_FOLDER_RELPATH}/${APP_NAME}/${APP_NAME}.inf"
+INF_FILE="${APP_FOLDER_ABSPATH}/${APP_NAME}.inf"
 if [ ! -f "${INF_FILE}" ]; then
     print_err "Missing INF file: ${INF_FILE}"
     exit 1
