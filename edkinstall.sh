@@ -240,11 +240,14 @@ else
     set_var ${FILE} TOOL_CHAIN_TAG GCC5
 fi
 
+# create script to initialise environment in root of workspace
 print_info "Creating: ${EDKINIT_FILENAME}"
 if [ ${LIBC} -eq 0 ]; then
     DEV_ENV="EDK2"
+    SETUP_SCRIPT="${WORKSPACE_DIR}/${EDK2_SETUP_FILENAME}"
 else
     DEV_ENV="EDK2+LIBC"
+    SETUP_SCRIPT="${WORKSPACE_DIR}/edk2/${EDK2_SETUP_FILENAME}"
 fi
 ######################################
 cat << EOF_SCRIPT > ${EDKINIT_FILENAME}
@@ -263,6 +266,7 @@ cat << EOF_SCRIPT > ${EDKINIT_FILENAME}
 ################################################################################
 
 INIT_SCRIPTS="${EDK2_SCRIPTS}/initscripts.sh"
+WORKSPACE_DIR="${WORKSPACE_DIR}"
 
 # check if script sourced
 if [ "\${BASH_SOURCE[0]}" == "\${0}" ]; then
@@ -278,40 +282,39 @@ EOF
     exit 1
 fi
 
+# initialise EDK2 Utility scripts
 if [ -f "\${INIT_SCRIPTS}" ]; then
-    # initialise EDK2 Utility scripts
-    source \${INIT_SCRIPTS}
+    source \${INIT_SCRIPTS}    
     # initialise EDK2 build enviroment
+    if [ -f "${SETUP_SCRIPT}" ]; then
+        pushd ${WORKSPACE_DIR} # > /dev/null 2>&1
 EOF_SCRIPT
 ######################################
 # EDK2
 if [ ${LIBC} -eq 0 ]; then
 cat << EOF_SCRIPT >> ${EDKINIT_FILENAME}
-    if [ -f "./edksetup.sh" ]; then
         unset WORKSPACE
         unset PACKAGES_PATH
         unset EDK_TOOLS_PATH
         unset CONF_PATH
-        source ./edksetup.sh
-        export EDK2_LIBC=${LIBC}
 EOF_SCRIPT
 else
 ######################################
 # EDK2+LIBC
 cat << EOF_SCRIPT >> ${EDKINIT_FILENAME}
-    if [ -f "./edk2/edksetup.sh" ]; then
         export WORKSPACE=\${PWD}
         export PACKAGES_PATH="\${WORKSPACE}/edk2-libc:\${WORKSPACE}/edk2"
         unset EDK_TOOLS_PATH
         unset CONF_PATH
-        source ./edk2/edksetup.sh
-        export EDK2_LIBC=${LIBC}
 EOF_SCRIPT
 fi
 ######################################
 cat << EOF_SCRIPT >> ${EDKINIT_FILENAME}
+        source ${SETUP_SCRIPT}
+        export EDK2_LIBC=${LIBC}
+        popd # > /dev/null 2>&1
     else
-        echo -e "\033[97;41m[ERROR] EDK2 Setup script not found: ${EDK2_SETUP}\033[0m" >&2
+        echo -e "\033[97;41m[ERROR] EDK2 Setup script not found: ${SETUP_SCRIPT}\033[0m" >&2
     fi
 else    
     echo -e "\033[97;41m[ERROR] EDK2 Utility script not found: \${INIT_SCRIPTS}\033[0m" >&2

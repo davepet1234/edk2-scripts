@@ -30,7 +30,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-DISK_IMAGE_ABSPATH="${WORKSPACE}/${DISK_IMAGE_RELPATH}"
+DISK_IMAGE_ABSPATH="${WORKSPACE}/${VM_FOLDER}/${DISK_IMAGE_FILENAME}"
 if [ ! -f "${DISK_IMAGE_ABSPATH}" ]; then
     print_err "No disk image found"
     exit 1

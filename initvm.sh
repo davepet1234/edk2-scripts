@@ -83,7 +83,8 @@ done
 check_script_env
 check_edk2_workspace
 
-DISK_IMAGE_ABSPATH="${WORKSPACE}/${DISK_IMAGE_RELPATH}"
+VM_FOLDER_ABSPATH="${WORKSPACE}/${VM_FOLDER}"
+DISK_IMAGE_ABSPATH="${VM_FOLDER_ABSPATH}/${DISK_IMAGE_FILENAME}"
 if [ -f "${DISK_IMAGE_ABSPATH}" ]; then
     print_warn "VM already exists"
     user_confirm "Overwrite existing VM files" ${FORCE}
@@ -100,10 +101,10 @@ else
 fi
 
 # create VM folder
-if [ ! -d "${VM_FOLDER}" ]; then
-    mkdir "${VM_FOLDER}"
+if [ ! -d "${VM_FOLDER_ABSPATH}" ]; then
+    mkdir "${VM_FOLDER_ABSPATH}"
     if [ $? -ne 0 ]; then
-        print_err "Failed to create directory: ${VM_FOLDER}"
+        print_err "Failed to create directory: ${VM_FOLDER_ABSPATH}"
         exit 1
     fi
 fi
@@ -131,8 +132,8 @@ else
 fi
 echo ${OVMF_CODE_FD}
 echo ${OVMF_VARS_FD}
-cp ${OVMF_CODE_FD} ${VM_FOLDER}
-cp ${OVMF_VARS_FD} ${VM_FOLDER}
+cp ${OVMF_CODE_FD} ${VM_FOLDER_ABSPATH}
+cp ${OVMF_VARS_FD} ${VM_FOLDER_ABSPATH}
 
 # build EFI Shell and copy to VM folder
 TOOL_CHAIN_TAG=$(get_var "${CONF_PATH}/${EDK2_CONFIG_FILENAME}" TOOL_CHAIN_TAG)
