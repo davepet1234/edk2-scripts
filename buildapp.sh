@@ -146,6 +146,7 @@ else
     ACTION="Build"
 fi
 
+cd ${WORKSPACE}
 build ${CLEAN_OPT} -p ${DSC_FILE_RELPATH} -b ${TARGET} -m ${INF_FILE}
 retval=$?
 

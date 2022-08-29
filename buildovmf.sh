@@ -68,6 +68,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # always build using gcc compiler as clang fails!
+cd ${WORKSPACE}
 build -p OvmfPkg/OvmfPkgX64.dsc -b NOOPT -t GCC5
 retval=$?
 

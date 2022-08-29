@@ -107,6 +107,7 @@ else
     ACTION="Build"
 fi
 
+cd ${WORKSPACE}
 build ${CLEAN_OPT} -p ShellPkg/ShellPkg.dsc -b ${TARGET}
 retval=$?
 

@@ -153,7 +153,11 @@ else
     fi
     buildshell.sh -r -f
     if [ $? -ne 0 ]; then
-        print_err "Failed to build the EFI Shell files"
+        print_err "Failed to build the EFI Shell"
+        exit 1
+    fi
+    if [ -f "${EFI_SHELL}" ]; then
+        print_err "EFI Shell file not found: ${EFI_SHELL}"
         exit 1
     fi
 fi
