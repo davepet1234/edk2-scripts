@@ -79,7 +79,8 @@ check_script_env
 check_edk2_workspace
 check_vm_dir
 
-ps -C ${QEMM} >/dev/null
+#ps -C ${QEMM} >/dev/null
+lsof ${WORKSPACE}/${VM_FOLDER}/${DISK_IMAGE_FILENAME}
 if [ $? -eq 0 ]; then
     print_err "VM already running"
     exit 1

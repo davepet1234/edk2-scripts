@@ -106,13 +106,14 @@ check_script_env
 check_edk2_workspace
 check_vm_dir
 
-ps -C ${QEMM} >/dev/null
+DISK_IMAGE_ABSPATH="${WORKSPACE}/${VM_FOLDER}/${DISK_IMAGE_FILENAME}"
+#ps -C ${QEMM} >/dev/null
+lsof ${DISK_IMAGE_ABSPATH}
 if [ $? -eq 0 ]; then
     print_err "VM running"
     exit 1
 fi
 
-DISK_IMAGE_ABSPATH="${WORKSPACE}/${VM_FOLDER}/${DISK_IMAGE_FILENAME}"
 if [ ! -f "${DISK_IMAGE_ABSPATH}" ]; then
     print_err "No disk image found: ${DISK_IMAGE_ABSPATH}"
     exit ${retval}
