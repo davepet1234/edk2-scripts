@@ -156,7 +156,7 @@ else
         print_err "Failed to build the EFI Shell"
         exit 1
     fi
-    if [ -f "${EFI_SHELL}" ]; then
+    if [ -! f "${EFI_SHELL}" ]; then
         print_err "EFI Shell file not found: ${EFI_SHELL}"
         exit 1
     fi
