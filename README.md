@@ -139,7 +139,7 @@ EDK2 Utility Scripts
    buildovmf.sh      Build the OVMF Package
 ```
 
-You can then get help on any script using the '-h' switch, e.g.
+You can then get help on any script using the `-h` switch, e.g.
 
 ```
 $ buildapp.sh -h
@@ -183,6 +183,61 @@ EDK2 Packages
 [PROMPT] Install missing packages? [y/n]
 ```
 
-### EDK2 Istallation
+In addition to the above packages a `python` symolic link is created to the currently installed python executable.
+
+### EDK2 Installation
+
+The `edkinstall.sh` script will clone the required EDK2 files and setup the build enironment.
+
+```
+$ edkinstall.sh -h
+
+ Script to download and configure EDK2 build environment
+ 
+ Usage: edkinstall.sh [<workspace>] [OPTIONS]
+
+ OPTIONS:
+
+  <workspace>            The name of a 'new' workspace folder
+
+  -p, --parent <dir>     Parent directory to clone into (default is current directory)
+  -t, --tag <tag>        GIT tag to clone (default: master)
+  -c, --clang            Install for Clang compiler (default: gcc)
+      --libc             Install EDK2 LIBC
+  -f, --force            No prompts
+  -h, --help             Print this help and exit
+```
+
+By default running the script with no options will install the [edk2](https://github.com/tianocore/edk2) package into an `edk2` folder in the current directory, this will be your workspace. If this is not what you want you can use a different name instead by specifying the `<workspace>`.
+
+LIBC is also supported by specifying the `--libc` option. In this instance the default workspace name will be `edk2libc` and both the [edk2](https://github.com/tianocore/edk2) and [edk2-libc](https://github.com/tianocore/edk2-libc) packages are cloned into this workspace.
+
+Once the required packages are cloned into your workspace the build tools are built before the default build options are set in the `Conf/target.txt` file. i.e.
+
+```
+ACTIVE_PLATFORM       = ShellPkg/ShellPkg.dsc
+TARGET                = DEBUG
+TARGET_ARCH           = X64
+TOOL_CHAIN_TAG        = GCC5
+```
+
+Finally an `edkinit.sh` script is created in the workspace root, this is to setup your environment.
+
+### Workspace Initialisation
+
+The `edkinit.sh` script is created in the workspace root during EDK2 installation, this is to setup your environment and must be sourced pior to startig any work.
+
+```
+$ source ./edkinit.sh
+
+ or
+
+$ . ./edkinit.sh
+```
+
+This sets up a path to the EDK2 scripts and runs the `edksetup.sh` script to initialise the EDK2 build environment.
+
+### Creating Application
 
 TODO
+
