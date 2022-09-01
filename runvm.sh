@@ -92,6 +92,7 @@ elif [ ${LOGGING} -eq 1 ]; then
 fi
 cd ${WORKSPACE}/${VM_FOLDER}
 ${QEMM} -cpu qemu64\
+                    -name "$(basename ${WORKSPACE})"\
                     -m 1024M\
                     -drive if=pflash,format=raw,unit=0,file=OVMF_CODE.fd,readonly=on\
                     -drive if=pflash,format=raw,unit=1,file=OVMF_VARS.fd\
