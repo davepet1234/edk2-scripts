@@ -243,6 +243,48 @@ $ source ./edkinit.sh
 
 This sets up a path to the EDK2 scripts and runs the `edksetup.sh` script to initialise the EDK2 build environment.
 
+## Workspace Info
+
+The `edkinfo.sh` script will display information on your currently configured workspace, including current default build settings. e.g.
+
+```
+$ edkinfo.sh 
+EDK2_SCRIPTS:     /home/dave/dev/edk2-scripts
+EDK2_LIBC:        0
+---
+WORKSPACE:        /home/dave/dev/edk2
+PACKAGES_PATH:    <unset>
+EDK_TOOLS_PATH:   /home/dave/dev/edk2/BaseTools
+CONF_PATH:        /home/dave/dev/edk2/Conf
+│
+├── ACTIVE_PLATFORM = ShellPkg/ShellPkg.dsc
+├── TARGET          = DEBUG
+├── TARGET_ARCH     = X64
+└── TOOL_CHAIN_TAG  = GCC5
+```
+
+## Initialise Virtual Machine
+
+The `initvm.sh` script will create a virtual machine in a `vm` directory in the root of the workspce.
+
+```
+$ ./initvm.sh -h
+
+ Script initialise VM and create disk image for EDK2
+ 
+ Usage: initvm.sh [OPTIONS]
+
+ OPTIONS:
+ 
+  -s, --size <n>         Size of disk image in MB (default: 50MB)
+  -f, --force            No prompts
+  -h, --help             Print this help and exit
+```
+
+For this the [OVMF](https://github.com/tianocore/tianocore.github.io/wiki/OVMF) package need to be built for use with QEMU, next the EFI shell is built, finally a disk image is created to which the just built EFI shell binary is copied (`EFI/Boot/bootx64.efi`) together with a simple startup script (`EFI/Boot/startup.nsh`).
+
+The `updatevm.sh` and `runvm.sh` scripts allow you to add files to the VM and start it.
+
 ## Creating Application
 
 The `mkapp.sh` will create a new shell application and update the appropriate files to add it to the ShellPkg.
@@ -425,3 +467,136 @@ main (
   LibC
   LibStdio
 ```
+
+## Building Applications
+
+The `buildapp.sh` script will build a previously created application.
+
+```
+$ buildapp.sh TestApp -h
+
+ Script to build EDK2 shell application
+ 
+ Usage: buildapp.sh [app name] [OPTIONS]
+
+  [app name] - application name
+
+ OPTIONS:
+
+  -d, --debug            Force DEBUG build
+  -r, --release          Force RELEASE build
+  -c, --clean            Clean build
+  -u, --updatevm         Update VM after build
+  -v, --runvm            Run VM after build, (implies '--updatevm' option)
+  -f, --force            No prompts
+  -h, --help             Print this help and exit
+```
+
+Various options are available but by default the TARGET specified in the `Conf/target.txt` file will be built, this is DEBUG by default.
+
+Additionally after a successful build you can specify to update the VM and run it. The follow command with perform a release build of the "TestApp", update the VM and then run it without prompting.
+
+```
+$buildapp.sh TestApp -r -v
+```
+
+## Updating Virtual Machine
+
+The `updatevm.sh` script allows you to copy your built application to the virtual disk image so it can be executed.
+
+```
+$ updatevm.sh -h
+
+ Script to update files on EDK2 VM disk image
+ 
+ Usage: updatevm.sh [app name] [OPTIONS]
+
+  [app name] - application name
+
+ OPTIONS:
+
+  -d, --debug            Force copy of DEBUG build
+  -r, --release          Force copy of RELEASE build
+  -x, --file             Copy specified file instead of app
+  -v, --runvm            Run VM after update
+  -f, --force            No prompts
+  -h, --help             Print this help and exit
+```
+
+When invoking the script simply specify the name of the application you wish to copy, the script will automatically choose the latest build, be it debug or release. e.g.
+
+```
+$ updatevm.sh TestApp
+[INFORMATION] Disk image: /home/dave/dev/edk2/vm/edkdisk.img
+DEBUG
+ File: /home/dave/dev/edk2/Build/Shell/DEBUG_GCC5/X64/TestApp.efi
+ Date: 2022-09-02 21:33:46 => 00:00:11 (11s)
+RELEASE
+ File: /home/dave/dev/edk2/Build/Shell/RELEASE_GCC5/X64/TestApp.efi
+ Date: 2022-09-02 21:33:33 => 00:00:24 (24s)
+
+[PROMPT] Update VM with DEBUG build [y/n]?
+```
+
+If you wish to override this behaviour simply specify either the `-r` or `-d` options to copy the RELEASE or DEBUG build.
+
+You are also able to copy any file using the `-x` option.
+
+After updating the VM you can choose to automatically run it using the `-v` option.
+
+## View Virtual Disk 
+
+The `lsdiak.sh` script will display the contents of the VM disk. e.g.
+
+```
+$ lsdisk.sh 
+[INFORMATION] Disk image: /home/dave/dev/edk2/vm/edkdisk.img
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/loop5       49M  1.1M   48M   3% /mnt/edkdisk
+
+[Jan  1  1970]  /mnt/edkdisk
+├── [Aug 29 11:50]  EFI
+│   └── [Aug 29 11:50]  Boot
+│       ├── [Aug 29 11:50]  bootx64.efi
+│       └── [Aug 29 11:50]  startup.nsh
+└── [Sep  2 21:46]  TestApp.efi
+
+2 directories, 3 files
+```
+
+## Miscellaneous Scripts
+
+The `buildshell.sh` script will build the EFI shell binaries.
+
+The `Shell_EA4BB293-2D7F-4456-A681-1F22F42CD0BC.efi` binary (full shell) is the one used on the VM disk which is renamed to `bootx64.efi`.
+
+```
+$ buildshell.sh -h
+
+ Script to build the EDK2 Shell Package
+ 
+ Usage: buildshell.sh [OPTIONS]
+
+ OPTIONS:
+
+  -d, --debug            DEBUG build
+  -r, --release          RELEASE build
+  -c, --clean            Clean build
+  -f, --force            No prompts
+  -h, --help             Print this help and exit
+```
+
+The `buildovmf.sh` script will build the EDK2 Open Virtual Machine Firmware (OVMF) package for use with virtual machine, the resultant files are used with QEMU. i.e.
+ 
+ * `OVMF_CODE.fd` - UEFI Firmware
+ * `OVMF_VARS.fd` - NVRAM variables
+ 
+```
+$ buildovmf.sh -h
+
+ OPTIONS:
+
+  -f, --force            No prompts
+  -h, --help             Print this help and exit
+```
+
