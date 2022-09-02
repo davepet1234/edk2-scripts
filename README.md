@@ -208,12 +208,12 @@ $ edkinstall.sh -h
 
  OPTIONS:
 
-  <workspace>            The name of a 'new' workspace folder
+  <workspace>            The name of a 'new' workspace folder (default: edk2)
 
   -p, --parent <dir>     Parent directory to clone into (default is current directory)
   -t, --tag <tag>        GIT tag to clone (default: master)
   -c, --clang            Install for Clang compiler (default: gcc)
-      --libc             Install EDK2 LIBC
+      --libc             Install EDK2 LIBC (default workspace folder: edk2libc)
   -f, --force            No prompts
   -h, --help             Print this help and exit
 ```
