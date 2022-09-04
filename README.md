@@ -600,3 +600,20 @@ $ buildovmf.sh -h
   -h, --help             Print this help and exit
 ```
 
+The `copyfromvm.sh` script will copy a file from the virtual disk image to the host filing system.
+
+```
+$ copyfromvm.sh -h
+
+ Script to copy file from EDK2 VM disk image to host
+ 
+ Usage: copyfromvm.sh [file] [OPTIONS]
+
+  [file] - file on VM disk
+
+ OPTIONS:
+
+  -f, --force            No prompts
+  -h, --help             Print this help and exit
+  ```
+  
