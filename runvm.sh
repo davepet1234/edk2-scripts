@@ -20,6 +20,11 @@ LOGGING=0
 LOGFILE="serial.log"
 ADD_SW=""
 
+# Override hang on "Guest has not initialised ther display (yet)." when launching VM.
+# See https://github.com/tianocore/edk2/commit/bf5678b5802685e07583e3c7ec56d883cbdd5da3
+# Thanks to Damian for finding this solution.
+QEMU_HANG_OVERRIDE="-fw_cfg name=opt/org.tianocore/X-Cpuhp-Bugcheck-Override,string=yes"
+
 ################################################################################
 # print_help
 
@@ -94,6 +99,7 @@ cd ${WORKSPACE}/${VM_FOLDER}
 ${QEMM} -cpu qemu64\
                     -name "$(basename ${WORKSPACE})"\
                     -m 1024M\
+                    ${QEMU_HANG_OVERRIDE}\
                     -drive if=pflash,format=raw,unit=0,file=OVMF_CODE.fd,readonly=on\
                     -drive if=pflash,format=raw,unit=1,file=OVMF_VARS.fd\
                     -drive format=raw,file=${DISK_IMAGE_FILENAME},if=virtio\
