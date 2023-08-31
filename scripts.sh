@@ -5,6 +5,7 @@
 # EDK2 Utility Scripts
 #
 # Author: David Petroivc
+# GitHub: https://github.com/davepet1234/edk2-scripts
 #
 ################################################################################
 

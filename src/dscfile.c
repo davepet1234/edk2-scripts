@@ -2,7 +2,8 @@
  * 
  * Program: dscfile.c
  * 
- * Author:  David Petrovic
+ * Author: David Petrovic
+ * GitHub: https://github.com/davepet1234/edk2-scripts
  * 
  * Program to add, delete and check entries in the [Component] section
  * of a DSC file
@@ -69,14 +70,16 @@ int main(int argc, char *argv[])
         default: return 1;
     }
     if ((argc-optind != 2) || (addflag + delflag + chkflag == 0)) {
-        printf("EDK2 Utility Script Tool\n");
-        printf("Add, delete and check entries in the [Component] section of a DSC file.\n");
-        printf("\n");
-        printf("%s <dsc file> <string> <option>\n", argv[0]);
-        printf("  Options:\n");
-        printf("    -a   add entry\n");
-        printf("    -d   delete entry\n");
-        printf("    -c   check entry\n");
+        printf("\nEDK2 Utility Script Tool\n\n");
+        printf(" Author: David Petrovic\n");
+        printf(" GitHub: https://github.com/davepet1234/edk2-scripts\n");
+        printf(" Built: " __DATE__ " " __TIME__"\n\n");
+        printf(" Add, delete and check entries in the [Component] section of a DSC file.\n\n");
+        printf(" dscfile <dsc file> <string> <option>\n\n");
+        printf("   Options:\n");
+        printf("     -a   add entry\n");
+        printf("     -d   delete entry\n");
+        printf("     -c   check entry\n\n");
         return 1;
     }
     if (addflag + delflag + chkflag != 1) {
