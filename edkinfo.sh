@@ -59,7 +59,11 @@ done
 check_script_env
 
 echo "EDK2_SCRIPTS:     $(display_var ${EDK2_SCRIPTS})"
-echo "EDK2_LIBC:        $(display_var ${EDK2_LIBC})"
+if [ ! -z ${EDK2_LIBC} ] && [ ${EDK2_LIBC} -eq 1 ]; then
+    echo "EDK2_LIBC:        $(display_var ${EDK2_LIBC}) (SUPPORTED)"
+else
+    echo "EDK2_LIBC:        $(display_var ${EDK2_LIBC}) (NO SUPPORT)"
+fi
 echo "---"
 
 if [ -z "${WORKSPACE}" ]; then
@@ -87,7 +91,7 @@ if [ ! -z "${CONF_PATH}" ]; then
     echo
 fi
 
-if [[ ${WORKSPACE}/ != $PWD/* ]]; then
+if [[ ! "$PWD" =~ "${WORKSPACE}" ]]; then
     print_warn "NOT in configured workspace"
 fi
 
