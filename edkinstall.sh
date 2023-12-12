@@ -245,10 +245,10 @@ fi
 print_info "Creating: ${EDKINIT_FILENAME}"
 if [ ${LIBC} -eq 0 ]; then
     DEV_ENV="EDK2"
-    SETUP_SCRIPT="${WORKSPACE_DIR}/${EDK2_SETUP_FILENAME}"
+    SETUP_SCRIPT="\${WORKSPACE_DIR}/${EDK2_SETUP_FILENAME}"
 else
     DEV_ENV="EDK2+LIBC"
-    SETUP_SCRIPT="${WORKSPACE_DIR}/edk2/${EDK2_SETUP_FILENAME}"
+    SETUP_SCRIPT="\${WORKSPACE_DIR}/edk2/${EDK2_SETUP_FILENAME}"
 fi
 ######################################
 cat << EOF_SCRIPT > ${EDKINIT_FILENAME}
@@ -288,7 +288,7 @@ if [ -f "\${INIT_SCRIPTS}" ]; then
     source \${INIT_SCRIPTS}    
     # initialise EDK2 build enviroment
     if [ -f "${SETUP_SCRIPT}" ]; then
-        pushd ${WORKSPACE_DIR} # > /dev/null 2>&1
+        pushd \${WORKSPACE_DIR} # > /dev/null 2>&1
 EOF_SCRIPT
 ######################################
 # EDK2
