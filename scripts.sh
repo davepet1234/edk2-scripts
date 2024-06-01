@@ -44,6 +44,7 @@ EDK2 Utility Scripts
    initvm.sh         Initialise VM and create disk image
    updatevm.sh       Update files on VM disk image
    lsdisk.sh         List files on VM disk image
+   copyfromvm.sh     Copy file from EDK2 VM disk image to host
   
    runvm.sh          Run VM
 

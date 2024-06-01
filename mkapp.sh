@@ -155,17 +155,13 @@ cat << EOF > ${APP_C_FILE_ABSPATH}
 
 **/
 
-#include  <stdio.h>
+#include <stdio.h>
 
-int
-main (
-  IN int Argc,
-  IN char **Argv
-  )
+int main(IN int Argc, IN char **Argv)
 {
-  printf("${APP_NAME} application (LibC)\n");
+    printf("${APP_NAME} application (LibC)\n");
 
-  return 0;
+    return 0;
 }
 EOF
 ######################################
@@ -178,20 +174,15 @@ cat << EOF > ${APP_C_FILE_ABSPATH}
 
 **/
 
-#include  <Uefi.h>
-#include  <Library/UefiLib.h>
-#include  <Library/ShellCEntryLib.h>
+#include <Uefi.h>
+#include <Library/UefiLib.h>
+#include <Library/ShellCEntryLib.h>
 
-INTN
-EFIAPI
-ShellAppMain (
-  IN UINTN Argc,
-  IN CHAR16 **Argv
-  )
+INTN EFIAPI ShellAppMain(IN UINTN Argc, IN CHAR16 **Argv)
 {
-  Print(L"${APP_NAME} application\n");
+    Print(L"${APP_NAME} application\n");
 
-  return 0;
+    return 0;
 }
 EOF
 ######################################
