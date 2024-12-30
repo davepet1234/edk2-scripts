@@ -238,7 +238,7 @@ set_var ${FILE} TARGET_ARCH X64
 if [ ${CLANG} -eq 1 ]; then
     set_var ${FILE} TOOL_CHAIN_TAG CLANGPDB
 else
-    set_var ${FILE} TOOL_CHAIN_TAG GCC5
+    set_var ${FILE} TOOL_CHAIN_TAG GCC
 fi
 
 # create script to initialise environment in root of workspace

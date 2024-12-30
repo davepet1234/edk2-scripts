@@ -228,7 +228,7 @@ Once the required packages are cloned into your workspace the build tools are bu
 ACTIVE_PLATFORM       = ShellPkg/ShellPkg.dsc
 TARGET                = DEBUG
 TARGET_ARCH           = X64
-TOOL_CHAIN_TAG        = GCC5
+TOOL_CHAIN_TAG        = GCC
 ```
 
 Finally an `edkinit.sh` script is created in the workspace root, this is to setup your environment.
@@ -260,7 +260,7 @@ CONF_PATH:        /home/dave/dev/edk2/Conf
 ├── ACTIVE_PLATFORM = ShellPkg/ShellPkg.dsc
 ├── TARGET          = DEBUG
 ├── TARGET_ARCH     = X64
-└── TOOL_CHAIN_TAG  = GCC5
+└── TOOL_CHAIN_TAG  = GCC
 ```
 
 ## Initialise Virtual Machine
@@ -529,10 +529,10 @@ When invoking the script simply specify the name of the application you wish to 
 $ updatevm.sh TestApp
 [INFORMATION] Disk image: /home/dave/dev/edk2/vm/edkdisk.img
 DEBUG
- File: /home/dave/dev/edk2/Build/Shell/DEBUG_GCC5/X64/TestApp.efi
+ File: /home/dave/dev/edk2/Build/Shell/DEBUG_GCC/X64/TestApp.efi
  Date: 2022-09-02 21:33:46 => 00:00:11 (11s)
 RELEASE
- File: /home/dave/dev/edk2/Build/Shell/RELEASE_GCC5/X64/TestApp.efi
+ File: /home/dave/dev/edk2/Build/Shell/RELEASE_GCC/X64/TestApp.efi
  Date: 2022-09-02 21:33:33 => 00:00:24 (24s)
 
 [PROMPT] Update VM with DEBUG build [y/n]?

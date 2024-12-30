@@ -70,7 +70,7 @@ fi
 
 # always build using gcc compiler as clang fails!
 cd ${WORKSPACE}
-build -p OvmfPkg/OvmfPkgX64.dsc -b NOOPT -t GCC5
+build -p OvmfPkg/OvmfPkgX64.dsc -b NOOPT -t GCC
 retval=$?
 
 if [ $retval -eq 0 ]; then

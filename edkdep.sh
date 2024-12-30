@@ -17,20 +17,17 @@
 PROGRAM_DIR="$(cd "$(dirname "$0")"; pwd;)"
 source "${PROGRAM_DIR}/shared.sh"
 
-# EDK2
+# EDK2 packages
 # gcc-5
 # acpica-tools instead of iasl
-EDK2_PACKAGES="git build-essential uuid-dev acpica-tools git nasm python3-distutils qemu-system-x86 tree"
+EDK2_PACKAGES="build-essential uuid-dev acpica-tools git nasm qemu-system-x86 tree"
 PYTHON_EXECUTABLE=python3
 # Clang
-CLANG_VERSION="11"
-LLVM_COMPILER_PACKAGE="clang"
-LLVM_LINKER_PACKAGE="lld"
+CLANG_PACKAGES="clang llvm lld"
 LLVM_COMPILE_CMD="clang"
 LLVM_LIBTOOL_CMD="llvm-lib"
 LLVM_RCTOOL_CMD="llvm-rc"
 LLVM_LINK_CMD="lld-link"
-CLANG_PACKAGES="${LLVM_COMPILER_PACKAGE}-${CLANG_VERSION} ${LLVM_LINKER_PACKAGE}-${CLANG_VERSION}"
 PROG_DIR="/usr/bin"
 LLVM_SYMLNKS="${PROG_DIR}/${LLVM_COMPILE_CMD} ${PROG_DIR}/${LLVM_LIBTOOL_CMD} ${PROG_DIR}/${LLVM_RCTOOL_CMD} ${PROG_DIR}/${LLVM_LINK_CMD}"
 
@@ -51,7 +48,7 @@ function print_help {
 
  OPTIONS:
 
-  -i, --install          Install packages
+  -i, --install          Install required packages (gcc)
   -c, --clang            Install optional clang compiler/linker
   -l, --list             List packages
   -f, --force            No prompts
@@ -157,7 +154,7 @@ else
     fi
     for pkg in ${pkglst[@]}; do
         print_info "Installing package: ${pkg}"
-        if [[ "${pkg}" = "${LLVM_COMPILER_PACKAGE}-${CLANG_VERSION}" ]]; then
+        if [[ "${pkg}" = "clang" ]]; then
             install_opt="--install-suggests"
         else
             install_opt=""
